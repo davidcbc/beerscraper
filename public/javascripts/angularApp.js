@@ -17,7 +17,7 @@ app.factory('bars', ['$http', function($http) {
         return $http.get('/bars/' + id).then(function(res) {
            return res.data;
         });
-    }
+    };
     return o;
 }]);
 
@@ -28,6 +28,11 @@ app.factory('categories', ['$http', function($http) {
     o.getAll = function(barId) {
         return $http.get('/bars/'+barId+'/categories').success(function(data){
             angular.copy(data, o.categories);
+        });
+    };
+    o.get = function(barId, id) {
+        return $http.get('/bars/' + barId + '/categories/' + id).then(function(res) {
+            return res.data;
         });
     };
     return o;
@@ -42,7 +47,7 @@ app.controller('MainCtrl', [
             }
             bars.create({
                 name: $scope.title,
-                link: $scope.link,
+                link: $scope.link
             });
             $scope.title = '';
             $scope.link = '';
@@ -56,6 +61,14 @@ app.controller('barsCtrl', [
     'bar',
     function($scope, bars, bar) {
         $scope.bar = bar;
+    }
+]);
+app.controller('categoryCtrl', [
+    '$scope',
+    'categories',
+    'category',
+    function($scope, categories, category) {
+        $scope.category = category;
     }
 ]);
 app.config([
@@ -82,10 +95,15 @@ app.config([
                         return bars.get($stateParams.id);
                     }]
                 }
-            //}).state('categories', {
-            //    url: '/bars/:barid/category/:categoryid',
-            //    templateUrl: '/category.html',
-            //    controller: 'CategoryCtrl'
+            }).state('categories', {
+                url: '/bars/:barid/categories/:categoryid',
+                templateUrl: '/category.html',
+                controller: 'categoryCtrl',
+                resolve: {
+                    category: ['categories', '$stateParams', function(categories, $stateParams) {
+                        return categories.get($stateParams.barid, $stateParams.categoryid);
+                    }]
+                }
             });
 
         $urlRouterProvider.otherwise('home');
